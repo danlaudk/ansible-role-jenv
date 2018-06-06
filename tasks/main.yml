@@ -1,0 +1,46 @@
+---
+- name: Ensure jenv is installed
+  homebrew:
+    name: jenv
+    state: present
+
+- name: Ensure selected JDK versions are installed
+  homebrew_cask:
+    name: '{{ item.version }}'
+    state: present
+  with_items: '{{ jenv_jdks }}'
+
+- name: 'Ensure {{ jenv_root }} directory is created'
+  file:
+    path: '{{ jenv_root }}'
+    state: directory
+    mode: 0755
+
+- name: Ensure jenv is added to profile system-wide
+  blockinfile:
+    path: /etc/profile
+    block: "{{ lookup('template', 'jenv.sh.j2') }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK -- JENV"
+  become: yes
+
+- name: Get available JDKs
+  shell: $SHELL -lc 'ls /Library/Java/JavaVirtualMachines/'
+  register: jdks
+  ignore_errors: yes
+  changed_when: False
+
+- name: Ensure JDKs are registered
+  shell: $SHELL -lc "jenv add /Library/Java/JavaVirtualMachines/{{ item }}/Contents/Home" # must use double quotes here
+  with_items: '{{ jdks.stdout_lines }}'
+  ignore_errors: yes
+  register: result
+  changed_when: "'already' not in result.stdout"
+
+- name: 'Ensure JDK {{ jenv_default_jdk }} is default'
+  shell: $SHELL -lc 'jenv global {{ jenv_default_jdk|quote }}'
+
+- name: Ensure shims are updated
+  shell: $SHELL -lc 'jenv rehash'
+
+- name: Ensure JAVA_HOME is exposed automatically
+  shell: $SHELL -lc 'jenv enable-plugin export'
