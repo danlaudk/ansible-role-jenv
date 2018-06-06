@@ -30,7 +30,7 @@
   changed_when: False
 
 - name: Ensure JDKs are registered
-  shell: $SHELL -lc "jenv add --skip-existing /Library/Java/JavaVirtualMachines/{{ item }}/Contents/Home" # must use double quotes here
+  shell: $SHELL -lc "jenv add /Library/Java/JavaVirtualMachines/{{ item }}/Contents/Home" # must use double quotes here
   with_items: '{{ jdks.stdout_lines }}'
   ignore_errors: yes
   register: result
