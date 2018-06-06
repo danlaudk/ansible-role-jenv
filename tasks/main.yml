@@ -42,5 +42,5 @@
 - name: Ensure shims are updated
   shell: $SHELL -lc 'jenv rehash'
 
-- name: Ensure JAVA_HOME is exposed automatically
-  shell: $SHELL -lc 'jenv enable-plugin export'
+#- name: Ensure JAVA_HOME is exposed automatically
+  #shell: $SHELL -lc 'jenv enable-plugin export'
