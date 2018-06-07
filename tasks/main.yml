@@ -35,6 +35,7 @@
   ignore_errors: yes
   register: result
   changed_when: "'already' not in result.stdout"
+  failed_when: "result.rc != 0 and 'already' not in result.stdout"
 
 - name: 'Ensure JDK {{ jenv_default_jdk }} is default'
   shell: $SHELL -lc 'jenv global {{ jenv_default_jdk|quote }}'
