@@ -1,5 +1,5 @@
 ---
 jenv_root: ~/.jenv
-jenv_default_jdk: 1.8
+jenv_default_jdk: 1.8.0.192
 jenv_jdks:
   - version: java8
