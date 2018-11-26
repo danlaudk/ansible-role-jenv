@@ -5,10 +5,23 @@
     state: present
 
 - name: Ensure selected JDK versions are installed
-  homebrew_cask:
-    name: '{{ item.version }}'
-    state: present
-  with_items: '{{ jenv_jdks }}'
+  block:
+    - name: Enable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
+      become: yes
+    - homebrew_cask:
+        name: '{{ item.version }}'
+        state: present
+      with_items: '{{ jenv_jdks }}'
+  always:
+    - name: Disable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
+        state: absent
+      become: yes
 
 - name: 'Ensure {{ jenv_root }} directory is created'
   file:
