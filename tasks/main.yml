@@ -6,22 +6,10 @@
 
 - name: Ensure selected JDK versions are installed
   block:
-    - name: Enable passwordless sudo
-      lineinfile:
-        path: /etc/sudoers
-        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
-      become: yes
     - homebrew_cask:
         name: '{{ item.version }}'
         state: present
       with_items: '{{ jenv_jdks }}'
-  always:
-    - name: Disable passwordless sudo
-      lineinfile:
-        path: /etc/sudoers
-        line: '{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL'
-        state: absent
-      become: yes
 
 - name: 'Ensure {{ jenv_root }} directory is created'
   file:
@@ -34,6 +22,14 @@
     path: /etc/profile
     block: "{{ lookup('template', 'jenv.sh.j2') }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK -- JENV"
+  become: yes
+
+- name: Install(?) or update zsh profile, per www.jenv.be in zsh-installation
+  blockinfile:
+    path: '{{ ansible_env.HOME }}/.zshrc'
+    block: |
+      export PATH="$HOME/.jenv/bin:$PATH"
+      eval "$(jenv init -)"
   become: yes
 
 - name: Get available JDKs
@@ -58,3 +54,9 @@
 
 - name: Ensure JAVA_HOME is exposed automatically
   shell: $SHELL -lc 'jenv enable-plugin export'
+# above fails for me : enable-plugin not found. manually works
+
+- name: Ensure sbt is installed
+  homebrew:
+    name: sbt
+    state: present
